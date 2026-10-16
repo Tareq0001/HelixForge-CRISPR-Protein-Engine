@@ -1,0 +1,1660 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HelixForge 3D | Computational Genomics, CRISPR-Cas9 & Protein Folding Engine</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Cairo:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --bg-deep: #040812;
+            --bg-panel: rgba(11, 19, 36, 0.88);
+            --bg-card: rgba(17, 29, 53, 0.72);
+            --border-subtle: rgba(56, 189, 248, 0.18);
+            --border-glow: rgba(16, 185, 129, 0.45);
+            --emerald: #10b981;
+            --cyan: #06b6d4;
+            --sky: #38bdf8;
+            --violet: #8b5cf6;
+            --amber: #f59e0b;
+            --rose: #f43f5e;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --font-sans: 'Inter', 'Cairo', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: radial-gradient(circle at 20% 15%, #0a192f 0%, #040812 65%);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Workstation Header */
+        .top-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 20px;
+            background: rgba(7, 13, 26, 0.94);
+            border-bottom: 1px solid var(--border-subtle);
+            backdrop-filter: blur(14px);
+            gap: 14px;
+            flex-wrap: wrap;
+            z-index: 50;
+        }
+
+        .brand-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(6, 182, 212, 0.25));
+            border: 1px solid var(--emerald);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--emerald);
+            font-size: 18px;
+            box-shadow: 0 0 18px rgba(16, 185, 129, 0.28);
+        }
+
+        .brand-title {
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            background: linear-gradient(90deg, #34d399, #38bdf8, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-sub {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+        }
+
+        /* Telemetry Strip */
+        .kpi-strip {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .kpi-pill {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(56, 189, 248, 0.22);
+            border-radius: 8px;
+            padding: 5px 11px;
+            display: flex;
+            flex-direction: column;
+            min-width: 112px;
+        }
+
+        .kpi-label {
+            font-size: 9.5px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--text-muted);
+        }
+
+        .kpi-val {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--emerald);
+        }
+
+        .kpi-val.cyan { color: var(--sky); }
+        .kpi-val.amber { color: var(--amber); }
+        .kpi-val.violet { color: #c084fc; }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn-action, .select-preset {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            color: var(--text-main);
+            padding: 7px 12px;
+            border-radius: 7px;
+            font-size: 12px;
+            font-weight: 600;
+            font-family: var(--font-sans);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-action:hover, .select-preset:hover {
+            border-color: var(--emerald);
+            box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
+        }
+
+        .btn-action.primary {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.22), rgba(6, 182, 212, 0.22));
+            border-color: var(--emerald);
+            color: #34d399;
+        }
+
+        .btn-action.warn {
+            background: rgba(245, 158, 11, 0.14);
+            border-color: rgba(245, 158, 11, 0.45);
+            color: #fbbf24;
+        }
+
+        .btn-action.danger {
+            background: rgba(244, 63, 94, 0.15);
+            border-color: rgba(244, 63, 94, 0.45);
+            color: #fb7185;
+        }
+
+        /* Main 3-Column Grid */
+        .workstation-grid {
+            display: grid;
+            grid-template-columns: 390px 1fr 370px;
+            gap: 12px;
+            padding: 12px;
+            flex: 1;
+            min-height: calc(100vh - 68px);
+        }
+
+        @media (max-width: 1320px) {
+            .workstation-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+        }
+
+        .panel-header {
+            padding: 10px 14px;
+            background: rgba(15, 23, 42, 0.9);
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .panel-title {
+            font-size: 12.5px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #e2e8f0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .panel-badge {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 99px;
+            background: rgba(16, 185, 129, 0.14);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.35);
+        }
+
+        .panel-body {
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        /* DNA Track Interactive Editor */
+        .dna-box {
+            background: rgba(6, 11, 23, 0.9);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            border-radius: 9px;
+            padding: 10px;
+        }
+
+        .dna-box-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .dna-strand-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3px;
+            direction: ltr;
+            font-family: var(--font-mono);
+        }
+
+        .nuc-cell {
+            width: 21px;
+            height: 24px;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.12s, box-shadow 0.12s;
+            border: 1px solid transparent;
+        }
+
+        .nuc-cell:hover {
+            transform: translateY(-2px) scale(1.08);
+            z-index: 2;
+        }
+
+        .nuc-A { background: rgba(16, 185, 129, 0.18); color: #34d399; border-color: rgba(16, 185, 129, 0.35); }
+        .nuc-T { background: rgba(244, 63, 94, 0.18); color: #fb7185; border-color: rgba(244, 63, 94, 0.35); }
+        .nuc-C { background: rgba(56, 189, 248, 0.18); color: #38bdf8; border-color: rgba(56, 189, 248, 0.35); }
+        .nuc-G { background: rgba(245, 158, 11, 0.18); color: #fbbf24; border-color: rgba(245, 158, 11, 0.35); }
+
+        .nuc-cell.in-spacer {
+            box-shadow: 0 0 0 1.5px #38bdf8;
+        }
+
+        .nuc-cell.in-pam {
+            box-shadow: 0 0 0 2px #f59e0b;
+            background: rgba(245, 158, 11, 0.34);
+        }
+
+        .nuc-cell.cut-point {
+            border-right: 3px solid #f43f5e !important;
+        }
+
+        .nuc-cell.mutated {
+            animation: pulseMut 1.4s infinite;
+        }
+
+        @keyframes pulseMut {
+            0%, 100% { box-shadow: 0 0 0 1px #f43f5e; }
+            50% { box-shadow: 0 0 10px 2px #f43f5e; }
+        }
+
+        /* CRISPR Candidate Table */
+        .table-wrap {
+            background: rgba(6, 11, 23, 0.85);
+            border: 1px solid rgba(56, 189, 248, 0.16);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        table.crispr-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+            font-family: var(--font-mono);
+            direction: ltr;
+        }
+
+        table.crispr-table th {
+            background: rgba(15, 23, 42, 0.95);
+            color: var(--text-muted);
+            padding: 7px 6px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(56, 189, 248, 0.16);
+        }
+
+        table.crispr-table td {
+            padding: 6px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            cursor: pointer;
+        }
+
+        table.crispr-table tr:hover td {
+            background: rgba(56, 189, 248, 0.09);
+        }
+
+        table.crispr-table tr.selected td {
+            background: rgba(16, 185, 129, 0.16);
+            color: #fff;
+        }
+
+        .score-badge {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 10px;
+        }
+
+        .score-high { background: rgba(16, 185, 129, 0.22); color: #34d399; }
+        .score-mid { background: rgba(245, 158, 11, 0.22); color: #fbbf24; }
+
+        /* Amino Acid Ribosome Strip */
+        .aa-strip {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            direction: ltr;
+        }
+
+        .aa-chip {
+            padding: 4px 6px;
+            border-radius: 5px;
+            font-family: var(--font-mono);
+            font-size: 10.5px;
+            font-weight: 700;
+            background: rgba(30, 41, 59, 0.85);
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .aa-chip.hydrophobic { border-color: rgba(245, 158, 11, 0.5); color: #fcd34d; }
+        .aa-chip.polar { border-color: rgba(56, 189, 248, 0.5); color: #7dd3fc; }
+        .aa-chip.charged { border-color: rgba(168, 85, 247, 0.5); color: #d8b4fe; }
+
+        /* Center 3D Viewport */
+        .viewport-container {
+            position: relative;
+            flex: 1;
+            min-height: 410px;
+            background: radial-gradient(circle at center, #0c1931 0%, #040812 100%);
+            border-radius: 10px;
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            overflow: hidden;
+        }
+
+        #proteinCanvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            cursor: grab;
+        }
+
+        #proteinCanvas:active {
+            cursor: grabbing;
+        }
+
+        .viewport-hud-top {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            pointer-events: none;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .mode-toolbar {
+            display: flex;
+            gap: 6px;
+            pointer-events: auto;
+            flex-wrap: wrap;
+        }
+
+        .mode-btn {
+            background: rgba(8, 15, 30, 0.85);
+            border: 1px solid rgba(56, 189, 248, 0.28);
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 600;
+            padding: 5px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            transition: all 0.15s;
+        }
+
+        .mode-btn.active, .mode-btn:hover {
+            color: #fff;
+            border-color: var(--emerald);
+            background: rgba(16, 185, 129, 0.22);
+        }
+
+        .legend-overlay {
+            position: absolute;
+            bottom: 10px;
+            left: 12px;
+            right: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            pointer-events: none;
+            font-size: 11px;
+            font-family: var(--font-mono);
+            color: var(--text-muted);
+            background: rgba(6, 11, 23, 0.78);
+            padding: 6px 12px;
+            border-radius: 7px;
+            border: 1px solid rgba(255, 255, 255, 0.07);
+        }
+
+        .legend-dots {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .dot-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .dot-circle {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        /* Energy Funnel Chart */
+        .energy-chart-box {
+            height: 135px;
+            background: rgba(6, 11, 23, 0.9);
+            border: 1px solid rgba(56, 189, 248, 0.18);
+            border-radius: 9px;
+            padding: 8px 10px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #energyCanvas {
+            width: 100%;
+            height: 95px;
+            display: block;
+        }
+
+        /* Right Column Plots */
+        .rama-box {
+            background: rgba(6, 11, 23, 0.92);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            border-radius: 9px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #ramaCanvas {
+            width: 250px;
+            height: 250px;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 6px;
+            background: #050a15;
+        }
+
+        /* Smith-Waterman Alignment Box */
+        .sw-box {
+            background: rgba(6, 11, 23, 0.92);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            border-radius: 9px;
+            padding: 10px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+        }
+
+        .sw-align-lines {
+            background: rgba(15, 23, 42, 0.9);
+            padding: 8px;
+            border-radius: 6px;
+            overflow-x: auto;
+            white-space: pre;
+            line-height: 1.45;
+            direction: ltr;
+            color: #e2e8f0;
+            border: 1px solid rgba(56, 189, 248, 0.15);
+            margin-top: 6px;
+        }
+
+        #swMatrixCanvas {
+            width: 100%;
+            height: 120px;
+            margin-top: 8px;
+            border-radius: 6px;
+            background: #050a15;
+            display: block;
+        }
+
+        .slider-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            font-size: 11.5px;
+            color: var(--text-muted);
+        }
+
+        input[type="range"] {
+            accent-color: var(--emerald);
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Scientific Telemetry Bar -->
+    <header class="top-header">
+        <div class="brand-box">
+            <div class="brand-icon"><i class="fa-solid fa-dna"></i></div>
+            <div>
+                <div class="brand-title" data-i18n="app_title">HELIXFORGE 3D // GENOMICS & PROTEIN FOLDING</div>
+                <div class="brand-sub" data-i18n="app_sub">CRISPR-Cas9 Guide Studio • Lennard-Jones 12-6 Molecular Dynamics • Ramachandran Phase Space</div>
+            </div>
+        </div>
+
+        <div class="kpi-strip">
+            <div class="kpi-pill">
+                <span class="kpi-label" data-i18n="kpi_dg">Gibbs Free Energy (ΔG)</span>
+                <span class="kpi-val" id="kpiDeltaG">-148.4 kcal/mol</span>
+            </div>
+            <div class="kpi-pill">
+                <span class="kpi-label" data-i18n="kpi_rmsd">Backbone RMSD</span>
+                <span class="kpi-val cyan" id="kpiRmsd">0.38 Å</span>
+            </div>
+            <div class="kpi-pill">
+                <span class="kpi-label" data-i18n="kpi_rg">Radius of Gyration (Rg)</span>
+                <span class="kpi-val violet" id="kpiRg">11.42 Å</span>
+            </div>
+            <div class="kpi-pill">
+                <span class="kpi-label" data-i18n="kpi_hb">Active H-Bonds</span>
+                <span class="kpi-val amber" id="kpiHbonds">22 Bonds</span>
+            </div>
+            <div class="kpi-pill">
+                <span class="kpi-label" data-i18n="kpi_crispr">Top sgRNA Efficiency</span>
+                <span class="kpi-val" id="kpiCrispr">94.6% (RS2)</span>
+            </div>
+        </div>
+
+        <div class="header-controls">
+            <select class="select-preset" id="locusPreset" onchange="loadLocusPreset(this.value)">
+                <option value="HBB">HBB β-Globin (Sickle-Cell E6V Locus)</option>
+                <option value="BRCA1">BRCA1 Exon 11 (RING Finger Domain)</option>
+                <option value="TP53">TP53 Core Domain (R175H Hotspot)</option>
+                <option value="PCSK9">PCSK9 Catalytic Subunit (LDL Receptor)</option>
+            </select>
+            <button class="btn-action warn" onclick="triggerThermalDenature()">
+                <i class="fa-solid fa-fire-flame-curved"></i> <span data-i18n="btn_denature">Denature (500K)</span>
+            </button>
+            <button class="btn-action primary" onclick="triggerNativeRefold()">
+                <i class="fa-solid fa-bolt"></i> <span data-i18n="btn_refold">Refold (Min ΔG)</span>
+            </button>
+            <button class="btn-action danger" onclick="triggerCas9Cleavage()">
+                <i class="fa-solid fa-scissors"></i> <span data-i18n="btn_cleave">Cas9 DSB Cut</span>
+            </button>
+            <button class="btn-action" onclick="toggleLanguage()" id="langBtn">
+                <i class="fa-solid fa-globe"></i> <span>العربية</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main 3-Column Workstation -->
+    <main class="workstation-grid">
+
+        <!-- COLUMN 1: CRISPR-Cas9 Genome Editor & Ribosome Translation -->
+        <section class="panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <i class="fa-solid fa-scissors" style="color: var(--emerald);"></i>
+                    <span data-i18n="p1_title">CRISPR-Cas9 Locus & sgRNA Designer</span>
+                </div>
+                <span class="panel-badge">SpCas9 5'-NGG-3'</span>
+            </div>
+            <div class="panel-body">
+                <div class="dna-box">
+                    <div class="dna-box-head">
+                        <span data-i18n="dna_hint">Click any nucleotide (5'→3') to induce point mutation:</span>
+                        <span id="mutationCounter" style="color: var(--rose); font-family: var(--font-mono); font-weight: 700;">0 Mutations</span>
+                    </div>
+                    <div class="dna-strand-row" id="dnaStrandContainer"></div>
+                </div>
+
+                <div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <span style="font-size:11.5px; font-weight:700; color:#cbd5e1;" data-i18n="sgrna_table_title">Detected PAM Protospacer Candidates (Top Ranked)</span>
+                        <span style="font-size:10px; font-family:var(--font-mono); color:var(--sky);" id="pamCountBadge">6 PAM Sites</span>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="crispr-table">
+                            <thead>
+                                <tr>
+                                    <th>Pos</th>
+                                    <th>20-nt Protospacer (5'→3')</th>
+                                    <th>PAM</th>
+                                    <th>GC%</th>
+                                    <th>Tm</th>
+                                    <th>Doench</th>
+                                </tr>
+                            </thead>
+                            <tbody id="crisprTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="dna-box">
+                    <div class="dna-box-head">
+                        <span data-i18n="ribo_title">Ribosome mRNA Translation & Kyte-Doolittle Hydropathy</span>
+                        <span id="proteinMassLabel" style="color: var(--emerald); font-family: var(--font-mono);">3.42 kDa</span>
+                    </div>
+                    <div class="aa-strip" id="aaStripContainer"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- COLUMN 2: 3D Protein Folding & Cas9 RNP Molecular Dynamics Viewport -->
+        <section class="panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <i class="fa-solid fa-atom" style="color: var(--sky);"></i>
+                    <span data-i18n="p2_title">3D Polypeptide Folding & Molecular Dynamics</span>
+                </div>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <span class="panel-badge" id="foldStateBadge">STATE: NATIVE MINIMA</span>
+                </div>
+            </div>
+            <div class="panel-body">
+                <div class="viewport-container">
+                    <canvas id="proteinCanvas"></canvas>
+                    <div class="viewport-hud-top">
+                        <div class="mode-toolbar">
+                            <button class="mode-btn active" onclick="setRenderMode('ribbon', this)" data-i18n="mode_ribbon">Ribbon + H-Bonds</button>
+                            <button class="mode-btn" onclick="setRenderMode('ballstick', this)" data-i18n="mode_ball">All-Atom Ball & Stick</button>
+                            <button class="mode-btn" onclick="setRenderMode('cpk', this)" data-i18n="mode_cpk">Van der Waals CPK</button>
+                            <button class="mode-btn" onclick="setRenderMode('cas9', this)" data-i18n="mode_cas9">Cas9 RNP Complex</button>
+                        </div>
+                        <div class="mode-toolbar">
+                            <button class="mode-btn active" id="spinBtn" onclick="toggleAutoSpin(this)"><i class="fa-solid fa-rotate"></i> Auto-Rotate</button>
+                        </div>
+                    </div>
+                    <div class="legend-overlay">
+                        <div class="legend-dots">
+                            <span class="dot-item"><i class="dot-circle" style="background:#10b981;"></i> <span data-i18n="leg_helix">α-Helix</span></span>
+                            <span class="dot-item"><i class="dot-circle" style="background:#38bdf8;"></i> <span data-i18n="leg_sheet">β-Sheet</span></span>
+                            <span class="dot-item"><i class="dot-circle" style="background:#f59e0b;"></i> <span data-i18n="leg_coil">Loop/Coil</span></span>
+                            <span class="dot-item"><i class="dot-circle" style="background:#f43f5e;"></i> <span data-i18n="leg_mut">Mutated / Cut Locus</span></span>
+                        </div>
+                        <span id="hoveredResidueInfo">Drag to rotate 3D • Scroll to zoom</span>
+                    </div>
+                </div>
+
+                <div class="slider-row">
+                    <span data-i18n="temp_label">Langevin Thermostat Bath Temperature (K):</span>
+                    <input type="range" id="tempSlider" min="150" max="550" value="300" oninput="updateBathTemp(this.value)">
+                    <span id="tempValDisplay" style="font-family:var(--font-mono); color:var(--amber); font-weight:700; min-width:58px;">300 K</span>
+                </div>
+
+                <div class="energy-chart-box">
+                    <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); margin-bottom:4px;">
+                        <span data-i18n="funnel_title">Thermodynamic Folding Trajectory — Potential Energy ΔG (kcal/mol) & RMSD (Å)</span>
+                        <span style="font-family:var(--font-mono); color:var(--emerald);" id="simStepCounter">MD Step: 1,420 fs</span>
+                    </div>
+                    <canvas id="energyCanvas"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- COLUMN 3: Ramachandran Phase Plot & Smith-Waterman DP Matrix -->
+        <section class="panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <i class="fa-solid fa-chart-scatter" style="color: #c084fc;"></i>
+                    <span data-i18n="p3_title">Ramachandran (φ, ψ) & Sequence Alignment</span>
+                </div>
+                <span class="panel-badge">BLOSUM62 / SW</span>
+            </div>
+            <div class="panel-body">
+                <div class="rama-box">
+                    <div style="width:100%; display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); margin-bottom:6px;">
+                        <span data-i18n="rama_title">Backbone Dihedral Angles (φ vs ψ)</span>
+                        <span style="font-family:var(--font-mono); color:#34d399;" id="ramaFavoredPct">96.8% Favored</span>
+                    </div>
+                    <canvas id="ramaCanvas" width="250" height="250"></canvas>
+                </div>
+
+                <div class="sw-box">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-weight:700; color:#cbd5e1;" data-i18n="sw_title">Smith-Waterman Local Alignment</span>
+                        <span id="swScoreBadge" style="color:var(--emerald); font-weight:700;">Score: 216 (100% ID)</span>
+                    </div>
+                    <div class="sw-align-lines" id="swAlignOutput"></div>
+                    <canvas id="swMatrixCanvas" width="320" height="120"></canvas>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // =========================================================================
+        // 1. GENOMIC LOCI PRESETS & GENETIC CODE TABLES
+        // =========================================================================
+        const LOCUS_PRESETS = {
+            HBB: {
+                name: "HBB β-Globin Exon 1 (Sickle-Cell Locus)",
+                dna: "ATGGTGCACCTGACTCCTGAGGAGAAGTCTGCCGTTACTGCCCTGTGGGGCAAGGTGAACGTGGATGAAGTTGGTGGTGAGGCCCTGGGCAG"
+            },
+            BRCA1: {
+                name: "BRCA1 RING Finger Domain (Exon 11)",
+                dna: "ATGGATTTATCTGCTCTTCGCGTTGAAGAAGTACAAAATGTCATTAATGCTATGCAGAAAATCTTAGAGTGTCCCATCTGTCTGGAGTTGAT"
+            },
+            TP53: {
+                name: "TP53 DNA-Binding Core (R175 Hotspot)",
+                dna: "ATGGAGGAGCCGCAGTCAGATCCTAGCGTCGAGCCCCCTCTGAGTCAGGAAACATTTTCAGACCTATGGAAACTACTTCCTGAAAACAACGT"
+            },
+            PCSK9: {
+                name: "PCSK9 Catalytic Subunit (Exon 2)",
+                dna: "ATGGGCACCGTCAGCTCCAGGCGGTCCTGGTGGCCGCTGCCACTGCTGCTGCTGCTGCTGCTGCTCCTGGGCCTGCGCTGGCCACGGGACC".replace("", "G")
+            }
+        };
+
+        const CODON_MAP = {
+            TTT:'F', TTC:'F', TTA:'L', TTG:'L', CTT:'L', CTC:'L', CTA:'L', CTG:'L',
+            ATT:'I', ATC:'I', ATA:'I', ATG:'M', GTT:'V', GTC:'V', GTA:'V', GTG:'V',
+            TCT:'S', TCC:'S', TCA:'S', TCG:'S', CCT:'P', CCC:'P', CCA:'P', CCG:'P',
+            ACT:'T', ACC:'T', ACA:'T', ACG:'T', GCT:'A', GCC:'A', GCA:'A', GCG:'A',
+            TAT:'Y', TAC:'Y', TAA:'*', TAG:'*', CAT:'H', CAC:'H', CAA:'Q', CAG:'Q',
+            AAT:'N', AAC:'N', AAA:'K', AAG:'K', GAT:'D', GAC:'D', GAA:'E', GAG:'E',
+            TGT:'C', TGC:'C', TGA:'*', TGG:'W', CGT:'R', CGC:'R', CGA:'R', CGG:'R',
+            AGT:'S', AGC:'S', AGA:'R', AGG:'R', GGT:'G', GGC:'G', GGA:'G', GGG:'G'
+        };
+
+        const AA_PROPS = {
+            A: { name:'Ala', hydro: 1.8, charge: 0, mass: 89.1, type:'hydrophobic' },
+            R: { name:'Arg', hydro:-4.5, charge: 1, mass:174.2, type:'charged' },
+            N: { name:'Asn', hydro:-3.5, charge: 0, mass:132.1, type:'polar' },
+            D: { name:'Asp', hydro:-3.5, charge:-1, mass:133.1, type:'charged' },
+            C: { name:'Cys', hydro: 2.5, charge: 0, mass:121.2, type:'hydrophobic' },
+            E: { name:'Glu', hydro:-3.5, charge:-1, mass:147.1, type:'charged' },
+            Q: { name:'Gln', hydro:-3.5, charge: 0, mass:146.2, type:'polar' },
+            G: { name:'Gly', hydro:-0.4, charge: 0, mass: 75.1, type:'polar' },
+            H: { name:'His', hydro:-3.2, charge: 0.5, mass:155.2, type:'charged' },
+            I: { name:'Ile', hydro: 4.5, charge: 0, mass:131.2, type:'hydrophobic' },
+            L: { name:'Leu', hydro: 3.8, charge: 0, mass:131.2, type:'hydrophobic' },
+            K: { name:'Lys', hydro:-3.9, charge: 1, mass:146.2, type:'charged' },
+            M: { name:'Met', hydro: 1.9, charge: 0, mass:149.2, type:'hydrophobic' },
+            F: { name:'Phe', hydro: 2.8, charge: 0, mass:165.2, type:'hydrophobic' },
+            P: { name:'Pro', hydro:-1.6, charge: 0, mass:115.1, type:'polar' },
+            S: { name:'Ser', hydro:-0.8, charge: 0, mass:105.1, type:'polar' },
+            T: { name:'Thr', hydro:-0.7, charge: 0, mass:119.1, type:'polar' },
+            W: { name:'Trp', hydro:-0.9, charge: 0, mass:204.2, type:'hydrophobic' },
+            Y: { name:'Tyr', hydro:-1.3, charge: 0, mass:181.2, type:'polar' },
+            V: { name:'Val', hydro: 4.2, charge: 0, mass:117.2, type:'hydrophobic' },
+            '*': { name:'Stop', hydro: 0.0, charge: 0, mass: 0.0, type:'polar' }
+        };
+
+        const NN_THERMO = {
+            AA:[-7.9,-22.2], TT:[-7.9,-22.2], AT:[-7.2,-20.4], TA:[-7.2,-21.3],
+            CA:[-8.5,-22.7], TG:[-8.5,-22.7], GT:[-8.4,-22.4], AC:[-8.4,-22.4],
+            CT:[-7.8,-21.0], AG:[-7.8,-21.0], GA:[-8.2,-22.2], TC:[-8.2,-22.2],
+            CG:[-10.6,-27.2], GC:[-9.8,-24.4], GG:[-8.0,-19.9], CC:[-8.0,-19.9]
+        };
+
+        // =========================================================================
+        // 2. STATE VARIABLES
+        // =========================================================================
+        let wildTypeDna = LOCUS_PRESETS.HBB.dna;
+        let currentDna = wildTypeDna.split('');
+        let mutatedIndices = new Set();
+        let pamCandidates = [];
+        let selectedPamIdx = 0;
+        let cas9CutActive = false;
+        let cutResidueIndex = -1;
+
+        let residues = [];
+        let renderMode = 'ribbon';
+        let autoSpin = true;
+        let bathTempK = 300;
+        let mdSteps = 1420;
+        let rotX = 0.35;
+        let rotY = 0.65;
+        let zoomScale = 14.5;
+        let isDragging = false;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+
+        let energyHistory = [];
+        let rmsdHistory = [];
+        for (let i = 0; i < 60; i++) {
+            energyHistory.push(-142 - Math.sin(i * 0.2) * 4);
+            rmsdHistory.push(0.42 + Math.cos(i * 0.2) * 0.05);
+        }
+
+        // =========================================================================
+        // 3. CRISPR SCANNER & RIBOSOME TRANSLATION
+        // =========================================================================
+        function calcMeltingTemp(seq) {
+            let dH = 0.2, dS = -5.7;
+            for (let i = 0; i < seq.length - 1; i++) {
+                const pair = seq.slice(i, i + 2);
+                const [h, s] = NN_THERMO[pair] || [-8.0, -21.0];
+                dH += h;
+                dS += s;
+            }
+            const R = 1.987;
+            const ct = 50e-9;
+            const tmK = (dH * 1000) / (dS + R * Math.log(ct / 4));
+            return (tmK - 273.15 + 16.6 * Math.log10(0.05)).toFixed(1);
+        }
+
+        function scanCrisprCandidates() {
+            const seq = currentDna.join('');
+            pamCandidates = [];
+            for (let i = 20; i <= seq.length - 3; i++) {
+                const pam = seq.slice(i, i + 3);
+                if (pam.slice(1, 3) === 'GG') {
+                    const spacer = seq.slice(i - 20, i);
+                    let gc = 0;
+                    for (const c of spacer) if (c === 'G' || c === 'C') gc++;
+                    const gcPct = ((gc / 20) * 100).toFixed(0);
+                    const tm = calcMeltingTemp(spacer);
+                    let score = 74.0;
+                    if (gcPct >= 40 && gcPct <= 65) score += 14.5;
+                    else score -= Math.abs(52.5 - gcPct) * 0.55;
+                    if (spacer[19] === 'G') score += 5.8;
+                    if (spacer[16] === 'A' || spacer[16] === 'T') score += 3.2;
+                    if (spacer.includes('TTTT')) score -= 20.0;
+                    score = Math.max(18.0, Math.min(99.4, score));
+                    pamCandidates.push({
+                        pos: i - 20,
+                        pamStart: i,
+                        cutSite: i - 3,
+                        spacer,
+                        pam,
+                        gcPct,
+                        tm,
+                        score: score.toFixed(1)
+                    });
+                }
+            }
+            pamCandidates.sort((a, b) => parseFloat(b.score) - parseFloat(a.score));
+            if (selectedPamIdx >= pamCandidates.length) selectedPamIdx = 0;
+        }
+
+        function renderDnaTrack() {
+            const container = document.getElementById('dnaStrandContainer');
+            container.innerHTML = '';
+            const activePam = pamCandidates[selectedPamIdx];
+
+            currentDna.forEach((nuc, idx) => {
+                const cell = document.createElement('div');
+                cell.className = `nuc-cell nuc-${nuc}`;
+                if (mutatedIndices.has(idx)) cell.classList.add('mutated');
+                if (activePam) {
+                    if (idx >= activePam.pos && idx < activePam.pamStart) {
+                        cell.classList.add('in-spacer');
+                    } else if (idx >= activePam.pamStart && idx < activePam.pamStart + 3) {
+                        cell.classList.add('in-pam');
+                    }
+                    if (idx === activePam.cutSite - 1) {
+                        cell.classList.add('cut-point');
+                    }
+                }
+                cell.title = `Base #${idx + 1} (${nuc}) — Click to mutate`;
+                cell.innerText = nuc;
+                cell.onclick = () => mutateNucleotide(idx);
+                container.appendChild(cell);
+            });
+
+            document.getElementById('mutationCounter').innerText = `${mutatedIndices.size} Mutation${mutatedIndices.size === 1 ? '' : 's'}`;
+        }
+
+        function renderCrisprTable() {
+            const tbody = document.getElementById('crisprTableBody');
+            tbody.innerHTML = '';
+            document.getElementById('pamCountBadge').innerText = `${pamCandidates.length} PAM Sites`;
+
+            if (pamCandidates.length > 0) {
+                document.getElementById('kpiCrispr').innerText = `${pamCandidates[0].score}% (RS2)`;
+            }
+
+            pamCandidates.slice(0, 6).forEach((cand, idx) => {
+                const tr = document.createElement('tr');
+                if (idx === selectedPamIdx) tr.className = 'selected';
+                const badgeClass = parseFloat(cand.score) >= 80 ? 'score-high' : 'score-mid';
+                tr.innerHTML = `
+                    <td>#${cand.pos + 1}</td>
+                    <td style="letter-spacing:0.4px; color:#e2e8f0;">${cand.spacer.slice(0, 10)}<span style="color:#38bdf8;">${cand.spacer.slice(10)}</span></td>
+                    <td style="color:#fbbf24; font-weight:700;">${cand.pam}</td>
+                    <td>${cand.gcPct}%</td>
+                    <td>${cand.tm}°C</td>
+                    <td><span class="score-badge ${badgeClass}">${cand.score}</span></td>
+                `;
+                tr.onclick = () => {
+                    selectedPamIdx = idx;
+                    renderDnaTrack();
+                    renderCrisprTable();
+                };
+                tbody.appendChild(tr);
+            });
+        }
+
+        function translateAndBuildPolypeptide() {
+            const seq = currentDna.join('');
+            const aaStrip = document.getElementById('aaStripContainer');
+            aaStrip.innerHTML = '';
+
+            const newResidues = [];
+            let totalMass = 0;
+            const totalCodons = Math.floor(seq.length / 3);
+
+            for (let i = 0; i < totalCodons; i++) {
+                const codon = seq.slice(i * 3, i * 3 + 3);
+                const aa = CODON_MAP[codon] || 'A';
+                const prop = AA_PROPS[aa] || AA_PROPS.A;
+                totalMass += prop.mass;
+
+                const isMutatedCodon =
+                    mutatedIndices.has(i * 3) ||
+                    mutatedIndices.has(i * 3 + 1) ||
+                    mutatedIndices.has(i * 3 + 2);
+
+                const chip = document.createElement('div');
+                chip.className = `aa-chip ${prop.type}`;
+                if (isMutatedCodon) chip.style.borderColor = '#f43f5e';
+                chip.innerHTML = `<span>${i + 1}:${aa}</span><span style="opacity:0.65;font-size:9px;">${prop.name}</span>`;
+                aaStrip.appendChild(chip);
+
+                // Compute 3D Native Conformation Target Coordinates
+                let sec = 'H';
+                let nx = 0, ny = 0, nz = 0;
+                let phi = -57.8, psi = -47.0;
+
+                if (i < totalCodons * 0.44) {
+                    sec = 'H';
+                    const theta = i * (100 * Math.PI / 180);
+                    nx = -5.5 + 2.4 * Math.cos(theta);
+                    ny = (i - totalCodons * 0.22) * 1.45;
+                    nz = 2.4 * Math.sin(theta);
+                    phi = -57.8 + Math.sin(i) * 6;
+                    psi = -47.0 + Math.cos(i) * 6;
+                } else if (i < totalCodons * 0.58) {
+                    sec = 'C';
+                    const t = (i - totalCodons * 0.44) / Math.max(1, totalCodons * 0.14);
+                    nx = -5.5 + 11.0 * t;
+                    ny = (totalCodons * 0.22) * 1.45 + 3.2 * Math.sin(t * Math.PI);
+                    nz = 3.0 * Math.cos(t * Math.PI);
+                    phi = -78 + Math.sin(i * 1.7) * 25;
+                    psi = 140 + Math.cos(i * 1.3) * 20;
+                } else {
+                    sec = 'E';
+                    const j = i - Math.floor(totalCodons * 0.58);
+                    const strand = j < 7 ? 0 : 1;
+                    const row = j < 7 ? j : 13 - j;
+                    nx = 4.2 + strand * 3.8 + (row % 2 === 0 ? 0.5 : -0.5);
+                    ny = (row - 3.5) * 2.25;
+                    nz = (row % 2 === 0 ? 1.1 : -1.1);
+                    phi = -135 + Math.sin(i) * 9;
+                    psi = 132 + Math.cos(i) * 9;
+                }
+
+                // Mutated residue distorts local conformation slightly
+                if (isMutatedCodon) {
+                    nx += 1.4 * Math.sin(i * 2.3);
+                    ny -= 1.1 * Math.cos(i * 1.9);
+                    phi += 38;
+                    psi -= 42;
+                }
+
+                const prev = residues[i];
+                newResidues.push({
+                    index: i,
+                    aa,
+                    name: prop.name,
+                    hydro: prop.hydro,
+                    charge: prop.charge,
+                    sec,
+                    isMutated: isMutatedCodon,
+                    nx, ny, nz,
+                    x: prev ? prev.x : nx,
+                    y: prev ? prev.y : ny,
+                    z: prev ? prev.z : nz,
+                    vx: prev ? prev.vx : 0,
+                    vy: prev ? prev.vy : 0,
+                    vz: prev ? prev.vz : 0,
+                    phi,
+                    psi,
+                    targetPhi: phi,
+                    targetPsi: psi
+                });
+            }
+
+            residues = newResidues;
+            document.getElementById('proteinMassLabel').innerText = `${(totalMass / 1000).toFixed(2)} kDa`;
+        }
+
+        function mutateNucleotide(idx) {
+            const cycle = { A: 'T', T: 'G', G: 'C', C: 'A' };
+            currentDna[idx] = cycle[currentDna[idx]] || 'A';
+            if (currentDna[idx] !== wildTypeDna[idx]) {
+                mutatedIndices.add(idx);
+            } else {
+                mutatedIndices.delete(idx);
+            }
+            scanCrisprCandidates();
+            renderDnaTrack();
+            renderCrisprTable();
+            translateAndBuildPolypeptide();
+            updateSmithWaterman();
+        }
+
+        function loadLocusPreset(key) {
+            const preset = LOCUS_PRESETS[key] || LOCUS_PRESETS.HBB;
+            wildTypeDna = preset.dna;
+            currentDna = wildTypeDna.split('');
+            mutatedIndices.clear();
+            cas9CutActive = false;
+            cutResidueIndex = -1;
+            residues = [];
+            scanCrisprCandidates();
+            renderDnaTrack();
+            renderCrisprTable();
+            translateAndBuildPolypeptide();
+            updateSmithWaterman();
+        }
+
+        // =========================================================================
+        // 4. MOLECULAR DYNAMICS ACTIONS (DENATURE / REFOLD / CAS9 CUT)
+        // =========================================================================
+        function triggerThermalDenature() {
+            bathTempK = 520;
+            document.getElementById('tempSlider').value = 520;
+            document.getElementById('tempValDisplay').innerText = '520 K';
+            document.getElementById('foldStateBadge').innerText = 'STATE: THERMAL UNFOLDING (520K)';
+            document.getElementById('foldStateBadge').style.color = '#fbbf24';
+
+            residues.forEach((r, idx) => {
+                const angle = idx * 0.55;
+                r.x = (Math.random() - 0.5) * 24;
+                r.y = (idx - residues.length / 2) * 1.9 + (Math.random() - 0.5) * 8;
+                r.z = (Math.random() - 0.5) * 24;
+                r.phi = (Math.random() - 0.5) * 340;
+                r.psi = (Math.random() - 0.5) * 340;
+            });
+        }
+
+        function triggerNativeRefold() {
+            bathTempK = 298;
+            cas9CutActive = false;
+            cutResidueIndex = -1;
+            document.getElementById('tempSlider').value = 298;
+            document.getElementById('tempValDisplay').innerText = '298 K';
+            document.getElementById('foldStateBadge').innerText = 'STATE: NATIVE MINIMA (298K)';
+            document.getElementById('foldStateBadge').style.color = '#34d399';
+        }
+
+        function triggerCas9Cleavage() {
+            const activePam = pamCandidates[selectedPamIdx];
+            if (!activePam) return;
+            cas9CutActive = true;
+            cutResidueIndex = Math.floor(activePam.cutSite / 3);
+            document.getElementById('foldStateBadge').innerText = `STATE: CAS9 DSB CLEAVED @ NT #${activePam.cutSite}`;
+            document.getElementById('foldStateBadge').style.color = '#fb7185';
+
+            // Displace C-terminal cleaved segment in 3D space
+            residues.forEach((r, i) => {
+                if (i >= cutResidueIndex) {
+                    r.x += 5.5;
+                    r.y -= 3.8;
+                    r.z += 4.2;
+                }
+            });
+        }
+
+        function updateBathTemp(val) {
+            bathTempK = parseFloat(val);
+            document.getElementById('tempValDisplay').innerText = `${bathTempK} K`;
+        }
+
+        function setRenderMode(mode, btn) {
+            renderMode = mode;
+            document.querySelectorAll('.mode-toolbar .mode-btn').forEach(b => {
+                if (b.id !== 'spinBtn') b.classList.remove('active');
+            });
+            btn.classList.add('active');
+        }
+
+        function toggleAutoSpin(btn) {
+            autoSpin = !autoSpin;
+            btn.classList.toggle('active', autoSpin);
+        }
+
+        // =========================================================================
+        // 5. SMITH-WATERMAN DYNAMIC PROGRAMMING ALIGNMENT
+        // =========================================================================
+        function updateSmithWaterman() {
+            const seqA = wildTypeDna.slice(0, 42);
+            const seqB = currentDna.join('').slice(0, 42);
+            const m = seqA.length, n = seqB.length;
+            const match = 3, mismatch = -2, gap = -2;
+
+            const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+            let maxScore = 0;
+
+            for (let i = 1; i <= m; i++) {
+                for (let j = 1; j <= n; j++) {
+                    const s = seqA[i - 1] === seqB[j - 1] ? match : mismatch;
+                    const val = Math.max(0, dp[i - 1][j - 1] + s, dp[i - 1][j] + gap, dp[i][j - 1] + gap);
+                    dp[i][j] = val;
+                    if (val > maxScore) maxScore = val;
+                }
+            }
+
+            let matches = 0;
+            let midLine = '';
+            for (let i = 0; i < m; i++) {
+                if (seqA[i] === seqB[i]) {
+                    midLine += '|';
+                    matches++;
+                } else {
+                    midLine += '•';
+                }
+            }
+            const idPct = ((matches / m) * 100).toFixed(1);
+            document.getElementById('swScoreBadge').innerText = `Score: ${maxScore} (${idPct}% ID)`;
+            document.getElementById('swAlignOutput').innerText =
+                `WT  5' ${seqA} 3'\n       ${midLine}\nED  5' ${seqB} 3'`;
+
+            // Draw DP Heatmap Matrix
+            const canvas = document.getElementById('swMatrixCanvas');
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+            ctx.clearRect(0, 0, w, h);
+
+            const cellW = w / m;
+            const cellH = h / n;
+            for (let i = 1; i <= m; i++) {
+                for (let j = 1; j <= n; j++) {
+                    const ratio = Math.min(1, dp[i][j] / Math.max(1, maxScore));
+                    if (Math.abs(i - j) <= 2 && ratio > 0.1) {
+                        ctx.fillStyle = `rgba(16, 185, 129, ${0.18 + ratio * 0.82})`;
+                    } else {
+                        ctx.fillStyle = `rgba(56, 189, 248, ${ratio * 0.35})`;
+                    }
+                    ctx.fillRect((i - 1) * cellW, (j - 1) * cellH, Math.ceil(cellW), Math.ceil(cellH));
+                }
+            }
+        }
+
+        // =========================================================================
+        // 6. REAL-TIME 3D MOLECULAR DYNAMICS & RAMACHANDRAN RENDER LOOP
+        // =========================================================================
+        const pCanvas = document.getElementById('proteinCanvas');
+        const pCtx = pCanvas.getContext('2d');
+
+        function resizeCanvases() {
+            const rect = pCanvas.parentElement.getBoundingClientRect();
+            pCanvas.width = rect.width * window.devicePixelRatio;
+            pCanvas.height = rect.height * window.devicePixelRatio;
+            pCtx.setTransform(window.devicePixelRatio, 0, 0, window.devicePixelRatio, 0, 0);
+
+            const eCanvas = document.getElementById('energyCanvas');
+            const eRect = eCanvas.getBoundingClientRect();
+            eCanvas.width = eRect.width * window.devicePixelRatio;
+            eCanvas.height = eRect.height * window.devicePixelRatio;
+        }
+        window.addEventListener('resize', resizeCanvases);
+
+        pCanvas.addEventListener('mousedown', e => {
+            isDragging = true;
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+        });
+        window.addEventListener('mouseup', () => { isDragging = false; });
+        window.addEventListener('mousemove', e => {
+            if (!isDragging) return;
+            const dx = e.clientX - lastMouseX;
+            const dy = e.clientY - lastMouseY;
+            rotY += dx * 0.008;
+            rotX += dy * 0.008;
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+        });
+        pCanvas.addEventListener('wheel', e => {
+            e.preventDefault();
+            zoomScale = Math.max(7.0, Math.min(26.0, zoomScale - e.deltaY * 0.01));
+        }, { passive: false });
+
+        function project3D(x, y, z, cx, cy) {
+            // Rotate Y
+            const cosY = Math.cos(rotY), sinY = Math.sin(rotY);
+            const x1 = x * cosY - z * sinY;
+            const z1 = z * cosY + x * sinY;
+            // Rotate X
+            const cosX = Math.cos(rotX), sinX = Math.sin(rotX);
+            const y2 = y * cosX - z1 * sinX;
+            const z2 = z1 * cosX + y * sinX;
+
+            const fov = 55;
+            const scale = (fov / (fov + z2 + 28)) * zoomScale;
+            return {
+                sx: cx + x1 * scale,
+                sy: cy + y2 * scale,
+                z: z2,
+                scale
+            };
+        }
+
+        function stepPhysicsAndDraw() {
+            const w = pCanvas.clientWidth;
+            const h = pCanvas.clientHeight;
+            pCtx.clearRect(0, 0, w, h);
+
+            if (autoSpin && !isDragging) {
+                rotY += 0.009;
+            }
+
+            // Subtle background coordinate grid
+            pCtx.strokeStyle = 'rgba(56, 189, 248, 0.05)';
+            pCtx.lineWidth = 1;
+            for (let gx = 0; gx < w; gx += 44) {
+                pCtx.beginPath(); pCtx.moveTo(gx, 0); pCtx.lineTo(gx, h); pCtx.stroke();
+            }
+            for (let gy = 0; gy < h; gy += 44) {
+                pCtx.beginPath(); pCtx.moveTo(0, gy); pCtx.lineTo(w, gy); pCtx.stroke();
+            }
+
+            const noiseAmp = Math.max(0.01, (bathTempK - 220) / 1400);
+            const springK = bathTempK > 430 ? 0.015 : 0.085;
+
+            let sqErr = 0;
+            let cxMass = 0, cyMass = 0, czMass = 0;
+            const n = residues.length;
+
+            residues.forEach((r, i) => {
+                let tx = r.nx;
+                let ty = r.ny;
+                let tz = r.nz;
+                if (cas9CutActive && i >= cutResidueIndex) {
+                    tx += 4.2;
+                    ty -= 2.8;
+                    tz += 3.0;
+                }
+                r.x += (tx - r.x) * springK + (Math.random() - 0.5) * noiseAmp;
+                r.y += (ty - r.y) * springK + (Math.random() - 0.5) * noiseAmp;
+                r.z += (tz - r.z) * springK + (Math.random() - 0.5) * noiseAmp;
+
+                r.phi += (r.targetPhi - r.phi) * 0.08 + (Math.random() - 0.5) * noiseAmp * 18;
+                r.psi += (r.targetPsi - r.psi) * 0.08 + (Math.random() - 0.5) * noiseAmp * 18;
+
+                const dx = r.x - r.nx, dy = r.y - r.ny, dz = r.z - r.nz;
+                sqErr += dx * dx + dy * dy + dz * dz;
+                cxMass += r.x; cyMass += r.y; czMass += r.z;
+            });
+
+            if (n > 0) {
+                cxMass /= n; cyMass /= n; czMass /= n;
+            }
+
+            let rgSq = 0;
+            residues.forEach(r => {
+                rgSq += (r.x - cxMass) ** 2 + (r.y - cyMass) ** 2 + (r.z - czMass) ** 2;
+            });
+
+            const rmsd = Math.sqrt(sqErr / Math.max(1, n));
+            const rg = Math.sqrt(rgSq / Math.max(1, n));
+            const deltaG = -154.0 + rmsd * 18.5 + mutatedIndices.size * 4.2 + (cas9CutActive ? 26.0 : 0);
+
+            const cx = w / 2;
+            const cy = h / 2;
+
+            // Draw CRISPR-Cas9 Bilobed Ribonucleoprotein Envelope if in 'cas9' mode
+            if (renderMode === 'cas9') {
+                pCtx.save();
+                const grad = pCtx.createRadialGradient(cx, cy, 20, cx, cy, 155);
+                grad.addColorStop(0, 'rgba(139, 92, 246, 0.24)');
+                grad.addColorStop(0.6, 'rgba(6, 182, 212, 0.12)');
+                grad.addColorStop(1, 'rgba(6, 182, 212, 0)');
+                pCtx.fillStyle = grad;
+                pCtx.beginPath();
+                pCtx.ellipse(cx, cy, 165, 125, rotY * 0.25, 0, Math.PI * 2);
+                pCtx.fill();
+                pCtx.strokeStyle = 'rgba(167, 139, 250, 0.45)';
+                pCtx.setLineDash([6, 4]);
+                pCtx.stroke();
+                pCtx.restore();
+            }
+
+            // Project all residues
+            const projected = residues.map(r => ({
+                ...r,
+                ...project3D(r.x, r.y, r.z, cx, cy)
+            }));
+
+            // Draw Hydrogen Bonds (i to i+3 or i+4 in alpha-helix, and beta-sheet bridges)
+            let hbondCount = 0;
+            pCtx.save();
+            pCtx.setLineDash([3, 3]);
+            pCtx.lineWidth = 1.2;
+            pCtx.strokeStyle = 'rgba(52, 211, 153, 0.42)';
+            for (let i = 0; i < projected.length; i++) {
+                for (let j = i + 3; j < projected.length; j++) {
+                    const a = projected[i], b = projected[j];
+                    const d3 = Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z);
+                    if (d3 < 5.6 && ((j - i === 3 || j - i === 4) || (a.sec === 'E' && b.sec === 'E'))) {
+                        hbondCount++;
+                        pCtx.beginPath();
+                        pCtx.moveTo(a.sx, a.sy);
+                        pCtx.lineTo(b.sx, b.sy);
+                        pCtx.stroke();
+                    }
+                }
+            }
+            pCtx.restore();
+
+            // Draw Backbone Peptide Bonds / Ribbons
+            for (let i = 0; i < projected.length - 1; i++) {
+                if (cas9CutActive && i === cutResidueIndex - 1) continue;
+                const a = projected[i];
+                const b = projected[i + 1];
+
+                pCtx.beginPath();
+                pCtx.moveTo(a.sx, a.sy);
+                if (renderMode === 'ribbon') {
+                    const midX = (a.sx + b.sx) / 2 + Math.sin(i + rotY) * 4;
+                    const midY = (a.sy + b.sy) / 2 + Math.cos(i + rotX) * 4;
+                    pCtx.quadraticCurveTo(midX, midY, b.sx, b.sy);
+                    pCtx.lineWidth = a.sec === 'H' ? 7.5 : a.sec === 'E' ? 6.5 : 3.2;
+                } else {
+                    pCtx.lineTo(b.sx, b.sy);
+                    pCtx.lineWidth = 2.6;
+                }
+
+                if (a.isMutated || b.isMutated) {
+                    pCtx.strokeStyle = '#f43f5e';
+                } else if (a.sec === 'H') {
+                    pCtx.strokeStyle = '#10b981';
+                } else if (a.sec === 'E') {
+                    pCtx.strokeStyle = '#38bdf8';
+                } else {
+                    pCtx.strokeStyle = '#f59e0b';
+                }
+                pCtx.stroke();
+            }
+
+            // Sort atoms back-to-front for painters algorithm
+            const sortedAtoms = [...projected].sort((a, b) => b.z - a.z);
+            sortedAtoms.forEach(atom => {
+                const baseRadius = renderMode === 'cpk' ? 1.55 : renderMode === 'ballstick' ? 0.85 : 0.62;
+                const rad = Math.max(3.5, baseRadius * atom.scale);
+
+                let color = '#10b981';
+                if (atom.isMutated || (cas9CutActive && atom.index === cutResidueIndex)) {
+                    color = '#f43f5e';
+                } else if (atom.sec === 'E') {
+                    color = '#38bdf8';
+                } else if (atom.sec === 'C') {
+                    color = '#f59e0b';
+                }
+
+                const grad = pCtx.createRadialGradient(
+                    atom.sx - rad * 0.3, atom.sy - rad * 0.3, rad * 0.1,
+                    atom.sx, atom.sy, rad
+                );
+                grad.addColorStop(0, '#ffffff');
+                grad.addColorStop(0.35, color);
+                grad.addColorStop(1, '#040812');
+
+                pCtx.fillStyle = grad;
+                pCtx.beginPath();
+                pCtx.arc(atom.sx, atom.sy, rad, 0, Math.PI * 2);
+                pCtx.fill();
+
+                if (renderMode !== 'cpk' && atom.scale > 8.5) {
+                    pCtx.fillStyle = '#e2e8f0';
+                    pCtx.font = '600 9.5px "JetBrains Mono"';
+                    pCtx.fillText(`${atom.aa}${atom.index + 1}`, atom.sx + rad + 2, atom.sy + 3);
+                }
+            });
+
+            // Update KPIs periodically
+            mdSteps += 5;
+            if (mdSteps % 25 === 0) {
+                document.getElementById('kpiDeltaG').innerText = `${deltaG.toFixed(1)} kcal/mol`;
+                document.getElementById('kpiRmsd').innerText = `${rmsd.toFixed(2)} Å`;
+                document.getElementById('kpiRg').innerText = `${rg.toFixed(2)} Å`;
+                document.getElementById('kpiHbonds').innerText = `${hbondCount} Bonds`;
+                document.getElementById('simStepCounter').innerText = `MD Step: ${mdSteps.toLocaleString()} fs`;
+
+                energyHistory.push(deltaG);
+                rmsdHistory.push(rmsd);
+                if (energyHistory.length > 60) {
+                    energyHistory.shift();
+                    rmsdHistory.shift();
+                }
+                drawEnergyFunnel();
+                drawRamachandranPlot();
+            }
+
+            requestAnimationFrame(stepPhysicsAndDraw);
+        }
+
+        function drawEnergyFunnel() {
+            const canvas = document.getElementById('energyCanvas');
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            const w = canvas.width / dpr;
+            const h = canvas.height / dpr;
+            ctx.save();
+            ctx.scale(dpr, dpr);
+            ctx.clearRect(0, 0, w, h);
+
+            // Grid
+            ctx.strokeStyle = 'rgba(148, 163, 184, 0.1)';
+            ctx.beginPath();
+            ctx.moveTo(0, h * 0.5);
+            ctx.lineTo(w, h * 0.5);
+            ctx.stroke();
+
+            // Free Energy Curve (Emerald)
+            ctx.beginPath();
+            energyHistory.forEach((val, idx) => {
+                const x = (idx / Math.max(1, energyHistory.length - 1)) * w;
+                const norm = Math.min(1, Math.max(0, (val + 170) / 140));
+                const y = h - 10 - (1 - norm) * (h - 22);
+                if (idx === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.strokeStyle = '#10b981';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // RMSD Curve (Cyan)
+            ctx.beginPath();
+            rmsdHistory.forEach((val, idx) => {
+                const x = (idx / Math.max(1, rmsdHistory.length - 1)) * w;
+                const norm = Math.min(1, Math.max(0, val / 12.0));
+                const y = h - 10 - norm * (h - 22);
+                if (idx === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 1.6;
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        function drawRamachandranPlot() {
+            const canvas = document.getElementById('ramaCanvas');
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+            ctx.clearRect(0, 0, w, h);
+
+            // Axes (-180 to +180)
+            ctx.strokeStyle = 'rgba(148, 163, 184, 0.25)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(w / 2, 0); ctx.lineTo(w / 2, h);
+            ctx.moveTo(0, h / 2); ctx.lineTo(w, h / 2);
+            ctx.stroke();
+
+            // Favored Alpha-Helix Contour
+            ctx.fillStyle = 'rgba(16, 185, 129, 0.16)';
+            ctx.strokeStyle = 'rgba(16, 185, 129, 0.45)';
+            ctx.beginPath();
+            ctx.ellipse(w * 0.32, h * 0.63, 32, 24, 0, 0, Math.PI * 2);
+            ctx.fill(); ctx.stroke();
+
+            // Favored Beta-Sheet Contour
+            ctx.fillStyle = 'rgba(56, 189, 248, 0.16)';
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.45)';
+            ctx.beginPath();
+            ctx.ellipse(w * 0.22, h * 0.18, 36, 26, 0, 0, Math.PI * 2);
+            ctx.fill(); ctx.stroke();
+
+            // Left-handed Alpha Contour
+            ctx.fillStyle = 'rgba(245, 158, 11, 0.12)';
+            ctx.strokeStyle = 'rgba(245, 158, 11, 0.35)';
+            ctx.beginPath();
+            ctx.ellipse(w * 0.66, h * 0.38, 18, 16, 0, 0, Math.PI * 2);
+            ctx.fill(); ctx.stroke();
+
+            // Plot residue (phi, psi) dots
+            let favored = 0;
+            residues.forEach(r => {
+                const px = ((r.phi + 180) / 360) * w;
+                const py = ((180 - r.psi) / 360) * h;
+
+                const inIdeal = Math.abs(r.phi - r.targetPhi) < 35 && Math.abs(r.psi - r.targetPsi) < 35;
+                if (inIdeal && !r.isMutated) favored++;
+
+                ctx.fillStyle = r.isMutated ? '#f43f5e' : r.sec === 'H' ? '#34d399' : r.sec === 'E' ? '#38bdf8' : '#fbbf24';
+                ctx.beginPath();
+                ctx.arc(px, py, 3.2, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            const pct = ((favored / Math.max(1, residues.length)) * 100).toFixed(1);
+            document.getElementById('ramaFavoredPct').innerText = `${pct}% Favored`;
+        }
+
+        // =========================================================================
+        // 7. BILINGUAL (ARABIC / ENGLISH) LOCALIZATION
+        // =========================================================================
+        let currentLang = 'en';
+        const I18N = {
+            en: {
+                app_title: "HELIXFORGE 3D // GENOMICS & PROTEIN FOLDING",
+                app_sub: "CRISPR-Cas9 Guide Studio • Lennard-Jones 12-6 Molecular Dynamics • Ramachandran Phase Space",
+                kpi_dg: "Gibbs Free Energy (ΔG)",
+                kpi_rmsd: "Backbone RMSD",
+                kpi_rg: "Radius of Gyration (Rg)",
+                kpi_hb: "Active H-Bonds",
+                kpi_crispr: "Top sgRNA Efficiency",
+                btn_denature: "Denature (500K)",
+                btn_refold: "Refold (Min ΔG)",
+                btn_cleave: "Cas9 DSB Cut",
+                p1_title: "CRISPR-Cas9 Locus & sgRNA Designer",
+                dna_hint: "Click any nucleotide (5'→3') to induce point mutation:",
+                sgrna_table_title: "Detected PAM Protospacer Candidates (Top Ranked)",
+                ribo_title: "Ribosome mRNA Translation & Kyte-Doolittle Hydropathy",
+                p2_title: "3D Polypeptide Folding & Molecular Dynamics",
+                mode_ribbon: "Ribbon + H-Bonds",
+                mode_ball: "All-Atom Ball & Stick",
+                mode_cpk: "Van der Waals CPK",
+                mode_cas9: "Cas9 RNP Complex",
+                leg_helix: "α-Helix",
+                leg_sheet: "β-Sheet",
+                leg_coil: "Loop/Coil",
+                leg_mut: "Mutated / Cut Locus",
+                temp_label: "Langevin Thermostat Bath Temperature (K):",
+                funnel_title: "Thermodynamic Folding Trajectory — Potential Energy ΔG (kcal/mol) & RMSD (Å)",
+                p3_title: "Ramachandran (φ, ψ) & Sequence Alignment",
+                rama_title: "Backbone Dihedral Angles (φ vs ψ)",
+                sw_title: "Smith-Waterman Local Alignment"
+            },
+            ar: {
+                app_title: "هيلكس فورج 3D // الجينوم الحاسوبي وطي البروتينات",
+                app_sub: "مختبر التحرير الجيني CRISPR-Cas9 • الديناميكا الجزيئية Lennard-Jones • فضاء زوايا راماشاندران",
+                kpi_dg: "طاقة جيبس الحرة (ΔG)",
+                kpi_rmsd: "انحراف الهيكل (RMSD)",
+                kpi_rg: "نصف قطر الدوران (Rg)",
+                kpi_hb: "الروابط الهيدروجينية",
+                kpi_crispr: "كفاءة الدليل الجيني sgRNA",
+                btn_denature: "تفكيك حراري (500K)",
+                btn_refold: "طي جزيئي (أدنى طاقة)",
+                btn_cleave: "قطع إنزيم Cas9",
+                p1_title: "مختبر التعديل الجيني CRISPR-Cas9 وتصميم الأدلة",
+                dna_hint: "انقر على أي قاعدة نيتروجينية (5'→3') لإحداث طفرة نقطية:",
+                sgrna_table_title: "أفضل مواقع PAM المكتشفة وترتيب كفاءة القطع",
+                ribo_title: "ترجمة الريبوسوم للأحماض الأمينية ومعامل الكراهية للماء",
+                p2_title: "المحاكاة ثلاثية الأبعاد لطي البروتين والديناميكا الجزيئية",
+                mode_ribbon: "الشريط الحلزوني + الروابط",
+                mode_ball: "الذرات والروابط الكاملة",
+                mode_cpk: "مجسمات فان دير فالس CPK",
+                mode_cas9: "معقد إنزيم Cas9 RNP",
+                leg_helix: "حلزون ألفا α",
+                leg_sheet: "صفائح بيتا β",
+                leg_coil: "حلقات مرنة",
+                leg_mut: "موقع الطفرة / القطع",
+                temp_label: "درجة حرارة المنظم الحراري (كلفن K):",
+                funnel_title: "مسار قمع الطي الديناميكي الحراري — الطاقة الحرة ΔG والانحراف الهيكلي RMSD",
+                p3_title: "مخطط راماشاندران (φ, ψ) ومحاذاة التسلسل الجيني",
+                rama_title: "زوايا الالتواء ثنائية السطوح (φ مقابل ψ)",
+                sw_title: "محاذاة التسلسل الديناميكية Smith-Waterman"
+            }
+        };
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'ar' : 'en';
+            document.documentElement.lang = currentLang;
+            document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+            document.querySelector('#langBtn span').innerText = currentLang === 'ar' ? 'English' : 'العربية';
+
+            const dict = I18N[currentLang];
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (dict[key]) el.innerText = dict[key];
+            });
+        }
+
+        // Initialize Workstation
+        window.addEventListener('DOMContentLoaded', () => {
+            resizeCanvases();
+            loadLocusPreset('HBB');
+            drawEnergyFunnel();
+            drawRamachandranPlot();
+            requestAnimationFrame(stepPhysicsAndDraw);
+        });
+    </script>
+</body>
+</html>
